@@ -21,5 +21,10 @@
 3. Named Lock
     - 이름을 가진 metadata locking입니다. 이름을 가진 lock을 획득한 후 해제할 때까지 다른 세션을 이 lock을 획득할 수 없도록 합니다.
     - Passimistic Lock과 유사한데 차이점은 Passimistic 락은 로우나 테이블 단위로 걸지만 Named Lock은 메타데이터의 locking을 하는 방법이다.
+    - 주의할 점으로는 트랜잭션이 종료될 때 락이 자동으로 해제되지 않기 때문에 별도의 명령어로 해제를 수행해 주거나 선점 시간이 끝나야 락이 해제된다.
+    - MySQL에서는 get-lock 명령어를 통해 named-lock을 획득할 수 있고 release-lock 명령어를 통해 lock을 해제할 수 있다. 
+    - Named Lock은 주로 분산락을 구현할 때 사용한다. 
+    - Pessimistic Lock은 타임아웃을 구현하기 힘들지만 Named Lock은 타임아웃을 손쉽게 구현할 수 있다. 그 외에도 데이터 삽입 시에 정합성을 맞춰야 하는 경우에도 Named Lock을 사용할 수 있다. 
+    - 하지만 이 방법은 트랙잭션 종료 시에 락 해제, 세션 관리를 잘 해줘야 되기 때문에 주위해서 사용해야 하고 실제로 사용할 때는 구현 방법이 복잡할 수 있다.
 
-충돌이 빈번하게 일어난다면 혹은 충돌이 번번하게 일어날 것이라고 예상된다면 Pessimistic Lock을추천하고 빈번하게 일어나지 않을 것이라고 예상된다면 Optimistic Lock을 추천한다.
+- 충돌이 빈번하게 일어난다면 혹은 충돌이 번번하게 일어날 것이라고 예상된다면 Pessimistic Lock을추천하고 빈번하게 일어나지 않을 것이라고 예상된다면 Optimistic Lock을 추천한다.

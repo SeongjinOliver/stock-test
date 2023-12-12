@@ -11,7 +11,7 @@ spring:
     username: root
     password: Illunex123!
     hikari:
-      maximum-pool-size: 40
+      maximum-pool-size: 40 # 같은 데이터 소스를 사용 하기 때문에 커넷션 풀 사이즈를 변경
 
 logging:
   level:
