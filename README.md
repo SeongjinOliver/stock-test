@@ -28,3 +28,38 @@
     - 하지만 이 방법은 트랙잭션 종료 시에 락 해제, 세션 관리를 잘 해줘야 되기 때문에 주위해서 사용해야 하고 실제로 사용할 때는 구현 방법이 복잡할 수 있다.
 
 - 충돌이 빈번하게 일어난다면 혹은 충돌이 번번하게 일어날 것이라고 예상된다면 Pessimistic Lock을추천하고 빈번하게 일어나지 않을 것이라고 예상된다면 Optimistic Lock을 추천한다.
+
+# Redis를 활용한 동시성 문제 해결
+### Lettuce
+- SETNX 명령어(SET if Not eXists)를 활용하여 분산락 구현
+  - 키와 밸류를 set할 때 기존의 값이 없을 때만 set하는 명령어
+  - SETNX를 활용하는 방식은 SpinLock 방식이므로 retry로직을 개발자가 작성
+  - SpinLock이란 락을 획득하려는 스레드가 락을 사용할 수 있는지 반복적으로 확인하면서 락 획득을 시도하는 방식
+  - 장점: 구현이 간단함
+  - 단점: SpinLock 방식이므로 레디스에 부화를 줄 수 있음
+- spin lock 방식
+
+### Redisson
+- pub-sub 기반으로 Lock 구현 제공
+- retry 로직을 작성하지 않아도 됨
+
+# Docker Redis lock 환경 셋팅 및 확인 명령어
+```shell
+  docker pull redis
+  docker run --name myredis -d -p 6379:6379 redis
+  docker ps
+  docker exec -it [CONTAINER ID] redis-cli
+# redis-cli 진입
+# key: 1, value: lock
+  setnx 1 lock
+  setnx 1 lock # 1인 key가 존재해서 실패 
+  del 1 # 삭제하고
+  setnx 1 lock # 성공
+```
+
+- Redis를 활용한 방법은 MySQL의 Named Lock과 거의 비슷하다고 생각하면 됨
+- 다른점은 Redis를 이용한다는 점과 Session 관리에 신경을 안 써도 됨
+
+
+
+
