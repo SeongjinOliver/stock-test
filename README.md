@@ -60,6 +60,42 @@
 - Redis를 활용한 방법은 MySQL의 Named Lock과 거의 비슷하다고 생각하면 됨
 - 다른점은 Redis를 이용한다는 점과 Session 관리에 신경을 안 써도 됨
 
+## Redisson 실습 명령어
+- 2개의 터미널에서 실습 진행
+```shell
+# 1
+docker exec -it [CONTAINER_ID] redis-cli
+subscribe ch1
+# 2
+docker exec -it [CONTAINER_ID] redis-cli
+publish ch1 hello
+```
 
+- Redisson은 자신이 점유하고 있는 락을 해제할 때 채널에 메시지를 내줌으로써 락을 획득해야 하는 스레드들에게 락 획득을 하라고 전달함
+- 그러면 락 획득을 해야 하는 스레드들은 메시지를 받았을 때 락 획득을 시도하게 됨
+- Lettuce는 계속 락 획득을 시도하는 반면에 Redisson은 락 해제가 되었을 때 한번 혹은 몇번만 시도를 하기 때문에 Redis의 부하를 줄여줌
+- Redisson 같은 경우에는 락 관련된 클래스들을 라이브러리에서 제공을 해주므로 우리가 별도의 레포지토리를 작성하지 않아도 됨
+- Redisson을 활용한 방법은 PubSub 기반의 구현이기 때문에 Redis의 부하를 중여준다는 장점이 있습니다. 하지만 구현이 조금 복잡하다는 단점과 별도의 라이브러리를 사용해야 하는 부담감이 있음
 
+# Lettuce 장단점
+- 구현이 간단하다.
+- spring data redis를 이용하면 lettuce가 기본이기 때문에 별도의 라이브러리를 사용하지 않아도 됨
+- spin lock 방식이기 때문에 동시에 많은 스레드가 lock 획득 대기 상태라면 redis에 부하가 갈 수 있음
 
+# Redisson 장단점
+- lock 획득 재시도를 기본으로 제공
+- pub-sub 방식으로 구현이 되어있기 때문에 lettuce 와 비교했을 때 redis에 부하가 덜 감
+- lock을 라이브러리 차원에서 제공해 주기 때문에 사용법을 공부해야 함
+
+# 실무에서는 ?
+- 재시도가 필요하지 않은 lock은 lettuce 활용
+- 재시도가 필요한 경우에는 redisson을 활용
+
+# Mysql 장단점
+- 이미 MySQL을 사용하고 있다면 별도의 비용 없이 사용 가능함
+- 어느정도의 트래픽까지는 문제 없이 활용이 가능
+- Redis 보다는 성능이 좋지 않음
+
+# Redis 장단점
+- 활용중인 Redis 가 없다면 별도의 구축 비용과 인프라 관리 비용이 발생함
+- MySQL 보다 성능이 좋음
